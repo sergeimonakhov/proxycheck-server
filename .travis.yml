@@ -6,12 +6,8 @@ language: go
 go:
   - tip
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install libgeoip-dev -y
-
 install:
-  - go get github.com/abh/geoip
+  - go get github.com/oschwald/geoip2-golang
   - go get github.com/parnurzeal/gorequest
 
 script:
