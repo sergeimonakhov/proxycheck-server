@@ -14,12 +14,14 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-type getWithproxy struct {
-	proxy     string
-	url       string
-	fileout   string
-	newstring string
-	info      bool
+func createFile(path string) {
+	var _, err = os.Stat(path)
+
+	if os.IsNotExist(err) {
+		var file, err = os.Create(path)
+		checkError(err)
+		defer file.Close()
+	}
 }
 
 func appendStringToFile(path, text string) error {
@@ -34,6 +36,14 @@ func appendStringToFile(path, text string) error {
 		return err
 	}
 	return nil
+}
+
+type getWithproxy struct {
+	proxy     string
+	url       string
+	fileout   string
+	newstring string
+	info      bool
 }
 
 func (g *getWithproxy) getproxy() {
@@ -75,6 +85,13 @@ func ipToCountry(ip string) string {
 	return country.Country.IsoCode
 }
 
+func checkError(err error) {
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+}
+
 func main() {
 	var (
 		url     = flag.String("url", "https://m.vk.com", "")
@@ -86,6 +103,7 @@ func main() {
 
 	flag.Parse()
 
+	createFile(*fileOut)
 	content, _ := ioutil.ReadFile(*fileIn)
 	proxys := strings.Split(string(content), "\n")
 
