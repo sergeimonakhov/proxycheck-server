@@ -4,12 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/abh/geoip"
+	"github.com/oschwald/geoip2-golang"
 	"github.com/parnurzeal/gorequest"
 )
 
@@ -64,15 +65,14 @@ func (g *getWithproxy) getproxy() {
 }
 
 func ipToCountry(ip string) string {
-	file := "/usr/share/GeoIP/GeoIP.dat"
-
-	gi, err := geoip.Open(file)
+	db, err := geoip2.Open("/usr/share/GeoIP/GeoLite2-Country.mmdb")
 	if err != nil {
 		fmt.Printf("Could not open GeoIP database\n")
 		os.Exit(1)
 	}
-	country, _ := gi.GetCountry(ip)
-	return country
+	defer db.Close()
+	country, _ := db.Country(net.ParseIP(ip))
+	return country.Country.IsoCode
 }
 
 func main() {
