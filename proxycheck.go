@@ -15,10 +15,8 @@ import (
 )
 
 func createFile(path string) {
-	var _, err = os.Stat(path)
-
-	if os.IsNotExist(err) {
-		var file, err = os.Create(path)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		file, err := os.Create(path)
 		checkError(err)
 		defer file.Close()
 	}
