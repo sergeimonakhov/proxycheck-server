@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go-proxycheck/config"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
 	"strings"
@@ -14,28 +16,6 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-func createFile(path string) {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		file, err := os.Create(path)
-		checkError(err)
-		defer file.Close()
-	}
-}
-
-func appendStringToFile(path, text string) error {
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = f.WriteString(text)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 type getWithproxy struct {
 	proxy     string
 	url       string
@@ -45,29 +25,33 @@ type getWithproxy struct {
 }
 
 func (g *getWithproxy) getproxy() {
-	httpProxy := fmt.Sprintf("http://%s", g.proxy)
-	s := strings.Split(g.proxy, ":")
-	ip := s[0]
-	b, _ := ioutil.ReadFile(g.fileout)
-	str := string(b)
-	existStr := strings.Contains(str, ip)
+	split := strings.Split(g.proxy, ":")
+	ip := fmt.Sprintf("%s%%", split[0])
+	//запрос к бд
+
+	//
 
 	if existStr == false {
+		httpProxy := fmt.Sprintf("http://%s", g.proxy)
 		request := gorequest.New().Proxy(httpProxy).Timeout(2 * time.Second)
 		timeStart := time.Now()
 		_, _, err := request.Get(g.url).End()
 		if err != nil {
+			//можно поискать удаление строки из файла, но хз
 			fmt.Println("BAD: ", g.proxy)
 		} else {
 			fmt.Println("GOOD: ", g.proxy)
+			//скорее всего убрать условие т.к все будет в бд
 			if g.info == true {
 				country := ipToCountry(ip)
 				respone := time.Since(timeStart)
 				g.newstring = fmt.Sprintf("%s;%s;%s\n", g.proxy, country, respone)
 			} else {
+				//должно стать не актуально
 				g.newstring = fmt.Sprintf("%s\n", g.proxy)
 			}
-			appendStringToFile(g.fileout, g.newstring)
+			//как и это, хотя тут скорее всего будет запрос к бд, а выше что нито типа db.prepare
+
 		}
 	}
 }
@@ -92,16 +76,24 @@ func checkError(err error) {
 
 func main() {
 	var (
-		url     = flag.String("url", "https://m.vk.com", "")
-		fileIn  = flag.String("in", "proxylist.txt", "full path to proxy file")
+		url    = flag.String("url", "https://m.vk.com", "")
+		fileIn = flag.String("in", "proxylist.txt", "full path to proxy file")
+		//удалить при работе с бд
 		fileOut = flag.String("out", "goodlist.txt", "full path to output file")
 		info    = flag.Bool("info", false, "info about proxy: Country, Respone")
 		treds   = flag.Int("treds", 50, "number of treds")
 	)
 
+	db, err := config.NewDB("postgres://proxy:proxy@localhost/proxy")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	env := &config.Env{DB: db}
+
 	flag.Parse()
 
-	createFile(*fileOut)
+	//так же не понадобится
 	content, _ := ioutil.ReadFile(*fileIn)
 	proxys := strings.Split(string(content), "\n")
 
