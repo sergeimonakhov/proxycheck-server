@@ -19,5 +19,6 @@ func main() {
 
 	router := httprouter.New()
 	router.GET("/proxys", models.ProxyIndex(env))
+	router.GET("/countrys", models.CountryIndex(env))
 	http.ListenAndServe(":3000", router)
 }

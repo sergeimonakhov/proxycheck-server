@@ -12,7 +12,7 @@ import (
 type Proxy struct {
 	id      int
 	Proxy   string
-	country string
+	Country string
 	respone string
 }
 
@@ -34,12 +34,31 @@ func ProxyIndex(env *config.Env) httprouter.Handle {
 			}
 		}
 
-		bks, err := CountryProxy(env.DB, str)
+		bks, err := ListProxy(env.DB, str)
 		if err != nil {
 			http.Error(w, http.StatusText(500), 500)
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		if err = json.NewEncoder(w).Encode(bks); err != nil {
+			w.WriteHeader(500)
+		}
+	}
+}
+
+//CountryIndex get
+func CountryIndex(env *config.Env) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		if r.Method != "GET" {
+			http.Error(w, http.StatusText(405), 405)
+			return
+		}
+		bks, err := ListCountry(env.DB)
+		if err != nil {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		if err = json.NewEncoder(w).Encode(bks); err != nil {
 			w.WriteHeader(500)

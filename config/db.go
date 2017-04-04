@@ -2,7 +2,7 @@ package config
 
 import (
 	"database/sql"
-
+	//так надо
 	_ "github.com/lib/pq"
 )
 
