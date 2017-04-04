@@ -2,19 +2,20 @@ package models
 
 import (
 	"database/sql"
+
+	_ "github.com/lib/pq"
 )
 
-//Proxy table
-type Proxy struct {
-	Isbn   string
-	Title  string
-	Author string
-	Price  float32
-}
+//CountryProxy get
+func CountryProxy(db *sql.DB, str string) ([]*Proxy, error) {
+	var rows *sql.Rows
+	var err error
+	if str != "" {
+		rows, err = db.Query("SELECT ipport FROM proxy WHERE country = $1", str)
+	} else {
+		rows, err = db.Query("SELECT ipport FROM proxy")
+	}
 
-//AllProxy list allproxy
-func AllProxy(db *sql.DB) ([]*Proxy, error) {
-	rows, err := db.Query("SELECT * FROM books")
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +24,7 @@ func AllProxy(db *sql.DB) ([]*Proxy, error) {
 	bks := make([]*Proxy, 0)
 	for rows.Next() {
 		bk := new(Proxy)
-		err := rows.Scan(&bk.Isbn, &bk.Title, &bk.Author, &bk.Price)
+		err = rows.Scan(&bk.Proxy)
 		if err != nil {
 			return nil, err
 		}
