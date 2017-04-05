@@ -2,6 +2,9 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
+	"time"
 )
 
 //ListProxy get
@@ -12,9 +15,9 @@ func ListProxy(db *sql.DB, str string) ([]*Proxy, error) {
 	)
 
 	if str != "" {
-		rows, err = db.Query("SELECT ipport FROM proxys WHERE country = $1", str)
+		rows, err = db.Query("SELECT ipport FROM proxy WHERE country = $1", str)
 	} else {
-		rows, err = db.Query("SELECT ipport FROM proxys")
+		rows, err = db.Query("SELECT ipport FROM proxy")
 	}
 
 	if err != nil {
@@ -40,7 +43,7 @@ func ListProxy(db *sql.DB, str string) ([]*Proxy, error) {
 //ListCountry get
 func ListCountry(db *sql.DB) ([]*Country, error) {
 
-	rows, err := db.Query("SELECT country FROM proxys GROUP BY country")
+	rows, err := db.Query("SELECT country FROM proxy GROUP BY country")
 
 	if err != nil {
 		return nil, err
@@ -60,4 +63,29 @@ func ListCountry(db *sql.DB) ([]*Country, error) {
 		return nil, err
 	}
 	return bks, nil
+}
+
+//ExistIP test
+func ExistIP(db *sql.DB, ip string) bool {
+	var i string
+	err := db.QueryRow("SELECT ipport FROM proxy WHERE ipport LIKE $1 LIMIT 1", ip+"%").Scan(&i)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		fmt.Println(err.Error())
+	}
+	return true
+}
+
+//AddToBase ip
+func AddToBase(db *sql.DB, proxy string, country string, respone time.Duration) {
+	stmt, err := db.Prepare("INSERT INTO proxy VALUES (default, $1, $2, $3)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = stmt.Exec(proxy, country, respone)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
