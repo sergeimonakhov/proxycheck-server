@@ -20,10 +20,9 @@ import (
 )
 
 type getWithproxy struct {
-	proxy     string
-	url       string
-	newstring string
-	env       *config.Env
+	proxy string
+	url   string
+	env   *config.Env
 }
 
 func (g *getWithproxy) getproxy() {
@@ -35,22 +34,22 @@ func (g *getWithproxy) getproxy() {
 	if bks == false {
 		request := gorequest.New().Proxy(httpProxy).Timeout(2 * time.Second)
 		timeStart := time.Now()
-		_, _, err := request.Get(g.url).End()
-		if err != nil {
-			fmt.Println("BAD: ", g.proxy)
-		} else {
+		resp, _, err := request.Get(g.url).Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError, http.StatusRequestTimeout).End()
+		if err == nil && resp.StatusCode == 200 {
 			fmt.Println("GOOD: ", g.proxy)
 			country := ipToCountry(ip)
 			respone := time.Since(timeStart)
 			//add to bd
 			models.AddToBase(g.env.DB, g.proxy, country, respone)
 			//
+		} else {
+			fmt.Println("BAD: ", g.proxy)
 		}
 	}
 }
 
 func ipToCountry(ip string) string {
-	db, err := geoip2.Open("/usr/share/GeoIP/GeoLite2-Country.mmdb")
+	db, err := geoip2.Open("GeoLite2-Country.mmdb")
 	if err != nil {
 		fmt.Printf("Could not open GeoIP database\n")
 		os.Exit(1)

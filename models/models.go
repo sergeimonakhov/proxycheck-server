@@ -15,9 +15,9 @@ func ListProxy(db *sql.DB, str string) ([]*Proxy, error) {
 	)
 
 	if str != "" {
-		rows, err = db.Query("SELECT ipport FROM proxy WHERE country = $1", str)
+		rows, err = db.Query("SELECT ipport FROM proxy WHERE country = $1 ORDER BY respone", str)
 	} else {
-		rows, err = db.Query("SELECT ipport FROM proxy")
+		rows, err = db.Query("SELECT ipport FROM proxy ORDER BY respone")
 	}
 
 	if err != nil {
