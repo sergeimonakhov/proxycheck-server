@@ -12,9 +12,9 @@ func ListProxy(db *sql.DB, str string) ([]*Proxy, error) {
 	)
 
 	if str != "" {
-		rows, err = db.Query("SELECT * FROM proxys WHERE country = $1", str)
+		rows, err = db.Query("SELECT ipport FROM proxys WHERE country = $1", str)
 	} else {
-		rows, err = db.Query("SELECT * FROM proxys")
+		rows, err = db.Query("SELECT ipport FROM proxys")
 	}
 
 	if err != nil {
@@ -25,7 +25,7 @@ func ListProxy(db *sql.DB, str string) ([]*Proxy, error) {
 	bks := make([]*Proxy, 0)
 	for rows.Next() {
 		bk := new(Proxy)
-		err = rows.Scan(&bk.id, &bk.Proxy, &bk.Country, &bk.respone)
+		err = rows.Scan(&bk.Proxy)
 		if err != nil {
 			return nil, err
 		}
@@ -38,7 +38,7 @@ func ListProxy(db *sql.DB, str string) ([]*Proxy, error) {
 }
 
 //ListCountry get
-func ListCountry(db *sql.DB) ([]*Proxy, error) {
+func ListCountry(db *sql.DB) ([]*Country, error) {
 
 	rows, err := db.Query("SELECT country FROM proxys GROUP BY country")
 
@@ -47,9 +47,9 @@ func ListCountry(db *sql.DB) ([]*Proxy, error) {
 	}
 	defer rows.Close()
 
-	bks := make([]*Proxy, 0)
+	bks := make([]*Country, 0)
 	for rows.Next() {
-		bk := new(Proxy)
+		bk := new(Country)
 		err = rows.Scan(&bk.Country)
 		if err != nil {
 			return nil, err

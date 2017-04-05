@@ -10,10 +10,12 @@ import (
 
 //Proxy table
 type Proxy struct {
-	id      int
-	Proxy   string
+	Proxy string
+}
+
+//Country column
+type Country struct {
 	Country string
-	respone string
 }
 
 //ProxyIndex get all proxy
