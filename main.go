@@ -26,11 +26,11 @@ type getWithproxy struct {
 }
 
 func (g *getWithproxy) getproxy() {
-	httpProxy := fmt.Sprintf("http://%s", g.proxy)
+	httpProxy := fmt.Sprintf("https://%s", g.proxy)
 	str := strings.Split(g.proxy, ":")
 	ip := str[0]
 	bks := models.ExistIP(g.env.DB, ip)
-	//
+
 	if bks == false {
 		request := gorequest.New().Proxy(httpProxy).Timeout(2 * time.Second)
 		timeStart := time.Now()
@@ -39,9 +39,7 @@ func (g *getWithproxy) getproxy() {
 			fmt.Println("GOOD: ", g.proxy)
 			country := ipToCountry(ip)
 			respone := time.Since(timeStart)
-			//add to bd
-			models.AddToBase(g.env.DB, g.proxy, country, respone)
-			//
+			models.AddToBase(g.env.DB, g.proxy, country, respone, "live")
 		} else {
 			fmt.Println("BAD: ", g.proxy)
 		}
@@ -80,13 +78,14 @@ func main() {
 	if err != nil {
 		log.Print(err)
 	}
-	defer db.Close()
 	env := &config.Env{DB: db}
 
 	if *server == true {
 		router := httprouter.New()
-		router.GET("/proxys", models.ProxyIndex(env))
-		router.GET("/countrys", models.CountryIndex(env))
+		router.GET("/api/v1/proxy", models.AllProxy(env))
+		router.GET("/api/v1/country", models.AllCountry(env))
+		//router.GET("/api/v1/country/:id", models.FilterCountry(env))
+		//router.GET("/api/v1/proxy/:id", models.FilterProxy(env))
 		http.ListenAndServe(":3000", router)
 	} else {
 		content, _ := ioutil.ReadFile(*fileIn)
