@@ -18,17 +18,13 @@ type Proxy struct {
 	IPPort  string `json:"proxy"`
 }
 
-//Country list
+//Country table
 type Country struct {
-	id      int
-	ip      string
-	port    string
+	ID      int    `json:"id"`
 	Country string `json:"country"`
-	respone int
-	status  bool
 }
 
-//AllProxyReq get
+//AllProxyReq SELECT
 func AllProxyReq(db *sql.DB) ([]*Proxy, error) {
 	//rows, err = db.Query("SELECT id,ipport FROM proxy WHERE country = $1 ORDER BY respone", str)
 	rows, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy")
@@ -53,9 +49,9 @@ func AllProxyReq(db *sql.DB) ([]*Proxy, error) {
 	return bks, nil
 }
 
-//AllCountryReq get
+//AllCountryReq SELECT
 func AllCountryReq(db *sql.DB) ([]*Country, error) {
-	rows, err := db.Query("SELECT country FROM proxy GROUP BY country")
+	rows, err := db.Query("SELECT * FROM country")
 
 	if err != nil {
 		return nil, err
@@ -65,7 +61,7 @@ func AllCountryReq(db *sql.DB) ([]*Country, error) {
 	bks := make([]*Country, 0)
 	for rows.Next() {
 		bk := new(Country)
-		err = rows.Scan(&bk.Country)
+		err = rows.Scan(&bk.ID, &bk.Country)
 		if err != nil {
 			return nil, err
 		}
@@ -73,6 +69,54 @@ func AllCountryReq(db *sql.DB) ([]*Country, error) {
 	}
 
 	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return bks, nil
+}
+
+//FilterCountryReq SELECT
+func FilterCountryReq(db *sql.DB, id int) ([]*Proxy, error) {
+	rows, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy WHERE country_id = $1", id)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bks := make([]*Proxy, 0)
+	for rows.Next() {
+		bk := new(Proxy)
+		err = rows.Scan(&bk.ID, &bk.ip, &bk.port, &bk.Country, &bk.Respone, &bk.Status, &bk.IPPort)
+		if err != nil {
+			return nil, err
+		}
+		bks = append(bks, bk)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return bks, nil
+}
+
+//FilterProxyReq SELECT
+func FilterProxyReq(db *sql.DB, id int) ([]*Proxy, error) {
+	row, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy WHERE id_proxy = $1", id)
+	if err != nil {
+		return nil, err
+	}
+	defer row.Close()
+
+	bks := make([]*Proxy, 0)
+	for row.Next() {
+		bk := new(Proxy)
+		err = row.Scan(&bk.ID, &bk.ip, &bk.port, &bk.Country, &bk.Respone, &bk.Status, &bk.IPPort)
+		if err != nil {
+			return nil, err
+		}
+
+		bks = append(bks, bk)
+	}
+	if err = row.Err(); err != nil {
 		return nil, err
 	}
 	return bks, nil
@@ -91,21 +135,29 @@ func ExistIP(db *sql.DB, ip string) bool {
 	return true
 }
 
-//AddToBase ip
-func AddToBase(db *sql.DB, proxy string, country string, respone time.Duration, status string) {
-	stmt, err := db.Prepare("INSERT INTO proxy VALUES (default, $1, $2, $3, $4)")
+//AddToBase INSERT
+func AddToBase(db *sql.DB, country string, ip string, port int, respone time.Duration, status bool) {
+	query := `WITH country_insert AS (
+	   INSERT INTO country(country)
+	   values($1)
+	   ON CONFLICT (country) DO UPDATE
+	   SET country = excluded.country
+	   RETURNING id_country
+	)
+	  INSERT INTO proxy(ip, port, country_id, respone, status)
+	  VALUES
+	  ($2, $3, (SELECT id_country FROM country_insert), $4, $5)
+	  ON CONFLICT (ip) DO NOTHING`
+
+	stmt, err := db.Prepare(query)
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = stmt.Exec(proxy, country, respone, status)
+
+	_, err = stmt.Exec(country, ip, port, respone, status)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
-//InfoID get
-/*func InfoID(db *sql.DB, id string) (ID, error) {
-	var bks ID
-	row := db.QueryRow("SELECT status FROM proxy WHERE id = $1", id)
-	return bks, row.Scan(&bks.Status)
-}*/

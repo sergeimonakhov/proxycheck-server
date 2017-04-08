@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -29,21 +30,22 @@ func (g *getWithproxy) getproxy() {
 	httpProxy := fmt.Sprintf("https://%s", g.proxy)
 	str := strings.Split(g.proxy, ":")
 	ip := str[0]
-	bks := models.ExistIP(g.env.DB, ip)
+	port, _ := strconv.Atoi(str[1])
+	//bks := models.ExistIP(g.env.DB, ip)
 
-	if bks == false {
-		request := gorequest.New().Proxy(httpProxy).Timeout(2 * time.Second)
-		timeStart := time.Now()
-		resp, _, err := request.Get(g.url).Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError, http.StatusRequestTimeout).End()
-		if err == nil && resp.StatusCode == 200 {
-			fmt.Println("GOOD: ", g.proxy)
-			country := ipToCountry(ip)
-			respone := time.Since(timeStart)
-			models.AddToBase(g.env.DB, g.proxy, country, respone, "live")
-		} else {
-			fmt.Println("BAD: ", g.proxy)
-		}
+	//if bks == false {
+	request := gorequest.New().Proxy(httpProxy).Timeout(2 * time.Second)
+	timeStart := time.Now()
+	resp, _, err := request.Get(g.url).Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError, http.StatusRequestTimeout).End()
+	if err == nil && resp.StatusCode == 200 {
+		fmt.Println("GOOD: ", g.proxy)
+		country := ipToCountry(ip)
+		respone := time.Since(timeStart)
+		models.AddToBase(g.env.DB, country, ip, port, respone, true)
+	} else {
+		fmt.Println("BAD: ", g.proxy)
 	}
+	//}
 }
 
 func ipToCountry(ip string) string {
@@ -84,8 +86,8 @@ func main() {
 		router := httprouter.New()
 		router.GET("/api/v1/proxy", models.AllProxy(env))
 		router.GET("/api/v1/country", models.AllCountry(env))
-		//router.GET("/api/v1/country/:id", models.FilterCountry(env))
-		//router.GET("/api/v1/proxy/:id", models.FilterProxy(env))
+		router.GET("/api/v1/country/:id", models.FilterCountry(env))
+		router.GET("/api/v1/proxy/:id", models.FilterProxy(env))
 		http.ListenAndServe(":3000", router)
 	} else {
 		content, _ := ioutil.ReadFile(*fileIn)

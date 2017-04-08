@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go-proxycheck/config"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -63,15 +64,16 @@ func AllCountry(env *config.Env) httprouter.Handle {
 	}
 }
 
-/*//IDindex get
-func IDindex(env *config.Env) httprouter.Handle {
+//FilterCountry get
+func FilterCountry(env *config.Env) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		id := p.ByName("id")
+		id, _ := strconv.Atoi(p.ByName("id"))
+
 		if r.Method != get {
 			http.Error(w, http.StatusText(405), 405)
 			return
 		}
-		bks, err := InfoID(env.DB, id)
+		bks, err := FilterCountryReq(env.DB, id)
 		if err != nil {
 			http.Error(w, http.StatusText(500), 500)
 			return
@@ -81,4 +83,25 @@ func IDindex(env *config.Env) httprouter.Handle {
 			w.WriteHeader(500)
 		}
 	}
-}*/
+}
+
+//FilterProxy get
+func FilterProxy(env *config.Env) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		id, _ := strconv.Atoi(p.ByName("id"))
+
+		if r.Method != get {
+			http.Error(w, http.StatusText(405), 405)
+			return
+		}
+		bks, err := FilterProxyReq(env.DB, id)
+		if err != nil {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		if err = json.NewEncoder(w).Encode(bks); err != nil {
+			w.WriteHeader(500)
+		}
+	}
+}
