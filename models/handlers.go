@@ -9,14 +9,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*func getID(w http.ResponseWriter, ps httprouter.Params) (string, bool) {
-	id := ps.ByName("id")
-	if err != nil {
-		w.WriteHeader(400)
-		return "0", false
-	}
-	return id, true
-}*/
 const (
 	get = "GET"
 )

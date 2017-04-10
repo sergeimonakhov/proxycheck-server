@@ -125,7 +125,7 @@ func FilterProxyReq(db *sql.DB, id int) ([]*Proxy, error) {
 //ExistIP test
 func ExistIP(db *sql.DB, ip string) bool {
 	var i string
-	err := db.QueryRow("SELECT ipport FROM proxy WHERE ipport LIKE $1", ip+"%").Scan(&i)
+	err := db.QueryRow("SELECT * FROM proxy WHERE ip = $1", ip).Scan(&i)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false

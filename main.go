@@ -31,21 +31,21 @@ func (g *getWithproxy) getproxy() {
 	str := strings.Split(g.proxy, ":")
 	ip := str[0]
 	port, _ := strconv.Atoi(str[1])
-	//bks := models.ExistIP(g.env.DB, ip)
+	bks := models.ExistIP(g.env.DB, ip)
 
-	//if bks == false {
-	request := gorequest.New().Proxy(httpProxy).Timeout(2 * time.Second)
-	timeStart := time.Now()
-	resp, _, err := request.Get(g.url).Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError, http.StatusRequestTimeout).End()
-	if err == nil && resp.StatusCode == 200 {
-		fmt.Println("GOOD: ", g.proxy)
-		country := ipToCountry(ip)
-		respone := time.Since(timeStart)
-		models.AddToBase(g.env.DB, country, ip, port, respone, true)
-	} else {
-		fmt.Println("BAD: ", g.proxy)
+	if bks == false {
+		request := gorequest.New().Proxy(httpProxy).Timeout(2 * time.Second)
+		timeStart := time.Now()
+		resp, _, err := request.Get(g.url).Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError, http.StatusRequestTimeout).End()
+		if err == nil && resp.StatusCode == 200 {
+			fmt.Println("GOOD: ", g.proxy)
+			country := ipToCountry(ip)
+			respone := time.Since(timeStart)
+			models.AddToBase(g.env.DB, country, ip, port, respone, true)
+		} else {
+			fmt.Println("BAD: ", g.proxy)
+		}
 	}
-	//}
 }
 
 func ipToCountry(ip string) string {
