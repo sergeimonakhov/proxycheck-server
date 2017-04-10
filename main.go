@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/a-h/round"
 	"github.com/julienschmidt/httprouter"
 	geoip2 "github.com/oschwald/geoip2-golang"
 	"github.com/parnurzeal/gorequest"
@@ -41,7 +42,7 @@ func (g *getWithproxy) getproxy() {
 			fmt.Println("GOOD: ", g.proxy)
 			country := ipToCountry(ip)
 			respone := time.Since(timeStart)
-			models.AddToBase(g.env.DB, country, ip, port, respone, true)
+			models.AddToBase(g.env.DB, country, ip, port, round.ToEven(respone.Seconds(), 3), true)
 		} else {
 			fmt.Println("BAD: ", g.proxy)
 		}
@@ -88,6 +89,7 @@ func main() {
 		router.GET("/api/v1/country", models.AllCountry(env))
 		router.GET("/api/v1/country/:id", models.FilterCountry(env))
 		router.GET("/api/v1/proxy/:id", models.FilterProxy(env))
+		router.POST("/api/v1/proxyupdate/:id", models.UpdateProxyStatus(env))
 		http.ListenAndServe(":3000", router)
 	} else {
 		content, _ := ioutil.ReadFile(*fileIn)
