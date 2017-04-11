@@ -2,8 +2,8 @@ package models
 
 import (
 	"encoding/json"
-	"go-proxycheck/config"
 	"net/http"
+	"proxycheck-server/config"
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"

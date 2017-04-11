@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"go-proxycheck/config"
-	"go-proxycheck/models"
 	"net/http"
+	"proxycheck-server/config"
+	"proxycheck-server/models"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/kelseyhightower/envconfig"
