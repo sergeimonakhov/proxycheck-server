@@ -5,12 +5,13 @@ language: go
 go:
 - tip
 install:
-- go get github.com/oschwald/geoip2-golang
-- go get github.com/parnurzeal/gorequest
+- go get github.com/julienschmidt/httprouter
+- go get github.com/kelseyhightower/envconfig
+- go get github.com/lib/pq
 script:
-- go build -o bin/go-proxycheck -ldflags '-s' .
+- go build -o bin/proxycheck-server -ldflags '-s' .
 before_deploy:
-- export FILE_TO_UPLOAD=$(ls bin/go-proxycheck)
+- export FILE_TO_UPLOAD=$(ls bin/proxycheck-server)
 
 deploy:
   provider: releases
@@ -19,5 +20,5 @@ deploy:
   file: ${FILE_TO_UPLOAD}
   skip_cleanup: true
   on:
-    repo: D1abloRUS/go-proxycheck
+    repo: D1abloRUS/proxycheck-server
     tags: true
