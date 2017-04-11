@@ -89,7 +89,7 @@ func main() {
 		router.GET("/api/v1/country", models.AllCountry(env))
 		router.GET("/api/v1/country/:id", models.FilterCountry(env))
 		router.GET("/api/v1/proxy/:id", models.FilterProxy(env))
-		router.POST("/api/v1/proxyupdate/:id", models.UpdateProxyStatus(env))
+		router.POST("/api/v1/proxy/:id", models.UpdateProxyStatus(env))
 		http.ListenAndServe(":3000", router)
 	} else {
 		content, _ := ioutil.ReadFile(*fileIn)

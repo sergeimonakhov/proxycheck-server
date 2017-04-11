@@ -165,14 +165,14 @@ func AddToBase(db *sql.DB, country string, ip string, port int, respone float64,
 }
 
 //UpdateStatus UPDATE
-func UpdateStatus(db *sql.DB, id int, status bool) error {
-	stmt, err := db.Prepare("UPDATE proxy SET status = $2 WHERE proxy_id = $1")
+func UpdateStatus(db *sql.DB, id int) error {
+	stmt, err := db.Prepare("UPDATE proxy SET status = false WHERE proxy_id = $1")
 
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 
-	_, err = stmt.Exec(id, status)
+	_, err = stmt.Exec(id)
 
 	if err != nil {
 		fmt.Println(err.Error())
