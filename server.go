@@ -7,10 +7,30 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/kelseyhightower/envconfig"
 )
 
+type postgres struct {
+	User     string
+	Password string
+	Host     string
+	DBname   string
+	Port     int `default:"5432"`
+}
+
 func main() {
-	db, err := config.NewDB("postgres://proxy:proxy@localhost/proxy?sslmode=disable")
+	var p postgres
+
+	err := envconfig.Process("postgres", &p)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		p.Host, p.Port, p.User, p.Password, p.DBname)
+
+	db, err := config.NewDB(psqlInfo)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

@@ -17,6 +17,7 @@ type Proxy struct {
 	IPPort    string  `json:"proxy"`
 }
 
+//ProxyRespone json
 type ProxyRespone struct {
 	IP      string
 	Port    int

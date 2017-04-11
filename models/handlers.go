@@ -70,6 +70,10 @@ func FilterCountry(env *config.Env) httprouter.Handle {
 			http.Error(w, http.StatusText(500), 500)
 			return
 		}
+		if len(bks) == 0 {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		if err = json.NewEncoder(w).Encode(bks); err != nil {
 			w.WriteHeader(500)
@@ -91,7 +95,10 @@ func FilterProxy(env *config.Env) httprouter.Handle {
 			http.Error(w, http.StatusText(500), 500)
 			return
 		}
-
+		if len(bks) == 0 {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		if err = json.NewEncoder(w).Encode(bks); err != nil {
 			w.WriteHeader(500)
