@@ -3,8 +3,9 @@ package models
 import (
 	"encoding/json"
 	"net/http"
-	"proxycheck-server/config"
 	"strconv"
+
+	"github.com/D1abloRUS/proxycheck-server/config"
 
 	"github.com/julienschmidt/httprouter"
 )

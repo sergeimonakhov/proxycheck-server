@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"proxycheck-server/config"
-	"proxycheck-server/models"
+
+	"github.com/D1abloRUS/proxycheck-server/config"
+	"github.com/D1abloRUS/proxycheck-server/models"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/kelseyhightower/envconfig"
