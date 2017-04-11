@@ -9,11 +9,20 @@ import (
 type Proxy struct {
 	ID        int `json:"id"`
 	ip        string
-	port      string
+	port      int
+	country   string
 	CountryID int     `json:"country"`
 	Respone   float64 `json:"respone"`
 	Status    bool    `json:"status"`
 	IPPort    string  `json:"proxy"`
+}
+
+type ProxyRespone struct {
+	IP      string
+	Port    int
+	Country string
+	Respone float64
+	Status  bool
 }
 
 //Country table
@@ -29,7 +38,7 @@ type ProxyStatus struct {
 
 //AllProxyReq SELECT
 func AllProxyReq(db *sql.DB) ([]*Proxy, error) {
-	rows, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy")
+	rows, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy WHERE status = true")
 
 	if err != nil {
 		return nil, err
@@ -78,7 +87,7 @@ func AllCountryReq(db *sql.DB) ([]*Country, error) {
 
 //FilterCountryReq SELECT
 func FilterCountryReq(db *sql.DB, id int) ([]*Proxy, error) {
-	rows, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy WHERE country_id = $1", id)
+	rows, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy WHERE country_id = $1 AND status = true", id)
 
 	if err != nil {
 		return nil, err
@@ -102,7 +111,7 @@ func FilterCountryReq(db *sql.DB, id int) ([]*Proxy, error) {
 
 //FilterProxyReq SELECT
 func FilterProxyReq(db *sql.DB, id int) ([]*Proxy, error) {
-	row, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy WHERE proxy_id = $1", id)
+	row, err := db.Query("SELECT *, concat_ws(':', ip::inet, port::int) AS ipport FROM proxy WHERE proxy_id = $1 AND status = true", id)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +147,7 @@ func ExistIP(db *sql.DB, ip string) bool {
 }
 
 //AddToBase INSERT
-func AddToBase(db *sql.DB, country string, ip string, port int, respone float64, status bool) {
+func AddToBase(db *sql.DB, country string, ip string, port int, respone float64, status bool) error {
 	query := `WITH country_insert AS (
 	   INSERT INTO country(country)
 	   values($1)
@@ -155,13 +164,16 @@ func AddToBase(db *sql.DB, country string, ip string, port int, respone float64,
 
 	if err != nil {
 		fmt.Println(err.Error())
+		return err
 	}
 
 	_, err = stmt.Exec(country, ip, port, respone, status)
 
 	if err != nil {
 		fmt.Println(err.Error())
+		return err
 	}
+	return nil
 }
 
 //UpdateStatus UPDATE

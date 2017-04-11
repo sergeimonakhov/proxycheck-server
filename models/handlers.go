@@ -117,3 +117,30 @@ func UpdateProxyStatus(env *config.Env) httprouter.Handle {
 		w.WriteHeader(200)
 	}
 }
+
+//AddProxy post json
+func AddProxy(env *config.Env) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		var p ProxyRespone
+		if r.Method != "POST" {
+			http.Error(w, http.StatusText(405), 405)
+			return
+		}
+		if r.Body == nil {
+			http.Error(w, "Please send a request body", 400)
+			return
+		}
+		err := json.NewDecoder(r.Body).Decode(&p)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+
+		err = AddToBase(env.DB, p.Country, p.IP, p.Port, p.Respone, p.Status)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		w.WriteHeader(200)
+	}
+}
