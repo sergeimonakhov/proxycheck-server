@@ -4,5 +4,5 @@ commit:
 	git push -u origin $b
 
 tag:
-	git tag $tag
+	git tag "$t"
 	git push origin --tags

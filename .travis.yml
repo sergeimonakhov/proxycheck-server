@@ -22,7 +22,7 @@ script:
   docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
   docker push $REPO;
   docker push $REPO:$TRAVIS_TAG;
-  docker rmi -f $REPO $REPO:$TRAVIS_TAG
+  docker rmi -f $REPO $REPO:$TRAVIS_TAG;
   fi
 
 before_deploy:
