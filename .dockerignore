@@ -1,0 +1,3 @@
+**/**
+!proxycheck-server
+!docker-entrypoint.sh

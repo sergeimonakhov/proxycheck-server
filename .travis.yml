@@ -1,17 +1,32 @@
 env:
   global:
   - CGO_ENABLED=0
+  - REPO=d1ablorus/proxycheck-server
 language: go
 go:
 - tip
+
 install:
 - go get github.com/julienschmidt/httprouter
 - go get github.com/kelseyhightower/envconfig
 - go get github.com/lib/pq
+
+services:
+- docker
+
 script:
-- go build -o bin/proxycheck-server -ldflags '-s' .
+- go build -o ./proxycheck-server -ldflags '-s' .
+- if [ -n "$TRAVIS_TAG" ]; then
+  docker build -t $REPO .;
+  docker tag $REPO:latest $REPO:$TRAVIS_TAG;
+  docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+  docker push $REPO;
+  docker push $REPO:$TRAVIS_TAG;
+  docker rmi -f $REPO $REPO:$TRAVIS_TAG
+  fi
+
 before_deploy:
-- export FILE_TO_UPLOAD=$(ls bin/proxycheck-server)
+- export FILE_TO_UPLOAD=$(ls ./proxycheck-server)
 
 deploy:
   provider: releases
