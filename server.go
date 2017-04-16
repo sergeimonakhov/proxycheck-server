@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/D1abloRUS/proxycheck-server/config"
 	"github.com/D1abloRUS/proxycheck-server/models"
@@ -34,8 +35,10 @@ func main() {
 	db, err := config.NewDB(psqlInfo)
 	if err != nil {
 		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 	env := &config.Env{DB: db}
+	fmt.Println("proxycheck-server started normaly")
 
 	router := httprouter.New()
 	router.GET("/api/v1/proxy", models.AllProxy(env))
